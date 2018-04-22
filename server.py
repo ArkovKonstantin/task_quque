@@ -13,21 +13,31 @@ class Server:
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind(('127.0.0.1', 5555))  # устанавливаем host и port
         self.sock.listen(1)  # устанавливаем режим прослушивания
+
         self.queue_dict = collections.defaultdict(list)
+        self.sock.setblocking(0)
 
     def run(self):
-        while True:
-            conn, addr = self.sock.accept()
-            data = conn.recv(1000000)
-            arguments = data.decode('utf-8').split(' ')
-            command = arguments.pop(0)
-            try:
-                self.queue_dict.update(self.read('data'))  # Чтение из файла
-            except EOFError:
-                pass
+        try:
+            while True:
+                while True:
+                    try: conn, addr = self.sock.accept()
+                    except socket.error:
+                        break
+                    else:
+                        data = conn.recv(1000000)
+                        arguments = data.decode('utf-8').split(' ')
+                        command = arguments.pop(0)
+                        try:
+                            self.queue_dict.update(self.read('data'))  # Чтение из файла
+                        except EOFError:
+                            pass
 
-            conn.send(eval('self.' + command)(*arguments))
-            conn.close()
+                        conn.send(eval('self.' + command)(*arguments))
+                        conn.close()
+
+        except KeyboardInterrupt:
+            return None
 
     def ADD(self, queue, length, data):
         try:  # Чтение счетчика ID из файла
@@ -64,7 +74,7 @@ class Server:
                     task['status'] = 'perform'
                     task['time'] = datetime.now()
                     self.write('data', self.queue_dict)  # Запись в Файл
-                    return bytes(' '.join(list(task.values())[:len(task.values())-2]), 'utf-8')
+                    return bytes(' '.join(list(task.values())[:len(task.values()) - 2]), 'utf-8')
 
         else:
             return b'NONE'
