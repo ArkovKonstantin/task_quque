@@ -14,7 +14,7 @@ class Task:
 
     @staticmethod
     def check_time(queue_dict):
-        dt = '5'  # 5 минут в секундах
+        dt = '300'  # 5 минут в секундах
         for queue in queue_dict.values():
             for task in queue:
                 if task.status == 'perform':
