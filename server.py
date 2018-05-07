@@ -14,11 +14,11 @@ class Task:
 
     @staticmethod
     def check_time(queue_dict):
-        dt = '300'  # 5 минут в секундах
+        dt = 300  # 5 минут в секундах
         for queue in queue_dict.values():
             for task in queue:
                 if task.status == 'perform':
-                    if str((datetime.now() - task.time).seconds) >= dt:
+                    if (datetime.now() - task.time).seconds >= dt:
                         queue.remove(task)
                         task.status = 'handle'
                         queue.append(task)
